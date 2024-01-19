@@ -1,0 +1,14 @@
+- hosts: all
+  tasks:
+    - name: "Update Pihole"
+      become: true
+      command: pihole -up
+
+    - name: "Remove Apt Cache"
+      become: true
+      command: apt-get clean
+
+    - name: "Remove Rotated Syslog"
+      become: true
+      command: rm -f /var/log/syslog.*
+

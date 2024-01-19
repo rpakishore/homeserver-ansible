@@ -1,0 +1,17 @@
+- hosts: all
+  become: true
+  tasks:
+    - name: Update apt & upgrade packages 
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+        upgrade: yes
+
+    - name: Dist Upgrade
+      apt:
+        upgrade: dist
+
+#    - name: Remove old packages and no longer needed dependencies
+#      apt:
+#        autoclean: yes
+#        autoremove: yes

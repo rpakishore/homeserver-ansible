@@ -1,0 +1,34 @@
+- hosts: all
+  become: true
+  tasks:
+    - name: Clean up log files
+      find:
+        paths: /var/log/
+        patterns: "*.log*"
+        age: 7d
+        recurse: yes
+        file_type: file
+      register: log_files_to_remove
+
+    - name: Remove log files
+      file:
+        path: "{{ item.path }}"
+        state: absent
+      loop: "{{ log_files_to_remove.files }}"
+      become: true
+
+    - name: Clean up temporary files
+      find:
+        paths: /tmp/
+        patterns: "*"
+        age: 1h
+        recurse: yes
+        file_type: any
+      register: temp_files_to_remove
+
+    - name: Remove temporary files
+      file:
+        path: "{{ item.path }}"
+        state: absent
+      loop: "{{ temp_files_to_remove.files }}"
+      become: true

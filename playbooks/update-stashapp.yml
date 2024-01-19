@@ -1,0 +1,8 @@
+- hosts: all
+  become: true
+  tasks:
+    - name: StashApp Update Scrapers
+      command: /home/rpakishore/docker/config/"{{ item }}"/update_scrapers.sh
+      with_items:
+        - stashapp
+        - stashapp-hen

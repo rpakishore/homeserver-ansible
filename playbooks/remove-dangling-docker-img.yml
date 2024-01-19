@@ -1,0 +1,32 @@
+- hosts: all
+  become: true
+  tasks:
+    - name: List all Docker images
+      shell:
+        cmd: docker images --quiet
+        executable: /bin/bash
+      register: docker_images
+      changed_when: false
+
+    - name: List all Docker containers
+      shell:
+        cmd: docker ps --all --quiet
+        executable: /bin/bash
+      register: docker_containers
+      changed_when: false
+
+    - name: Purge unused Docker images
+      shell:
+        cmd: docker image prune --force --filter "dangling=true"
+        executable: /bin/bash
+      when: docker_images.stdout_lines | difference(docker_containers.stdout_lines) | length > 0
+
+    - name: Remove build cache
+      shell:
+        cmd: docker builder prune -a -f
+        executable: /bin/bash
+
+    - name: Remove system cache
+      shell:
+        cmd: docker system prune -f
+        executable: /bin/bash

@@ -1,0 +1,65 @@
+version: '3.7'
+
+volumes:
+  semaphore-mysql:
+    name: semaphore-mysql
+  semaphore-config:
+    name: semaphore-config
+networks:
+  nginx:
+    name: nginx
+    external: true
+  ansible:
+    name: ansible
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: ansiblesemaphore_db
+    hostname: mysql
+    volumes:
+      - semaphore-mysql:/var/lib/mysql
+    environment:
+      - MYSQL_RANDOM_ROOT_PASSWORD=yes
+      - MYSQL_DATABASE=semaphore
+      - MYSQL_USER=semaphore
+      - MYSQL_PASSWORD=${SEMAPHORE_DB_PASS}
+    restart: unless-stopped
+    networks:
+      - ansible
+    env_file:
+      - .env
+
+  semaphore:
+    container_name: ansiblesemaphore
+    image: semaphoreui/semaphore:latest
+#    user: "1000:1000"
+#    ports:
+#      - 9019:3000
+    environment:
+      - SEMAPHORE_DB_USER=semaphore
+      - SEMAPHORE_DB_PASS=${SEMAPHORE_DB_PASS}
+      - SEMAPHORE_DB_HOST=mysql
+      - SEMAPHORE_DB_PORT=3306
+      - SEMAPHORE_DB_DIALECT=mysql
+      - SEMAPHORE_DB=semaphore
+      - SEMAPHORE_PLAYBOOK_PATH=/tmp/semaphore/
+      - SEMAPHORE_ADMIN_PASSWORD=${SEMAPHORE_ADMIN_PASSWORD}
+      - SEMAPHORE_ADMIN_NAME=rpakishore
+      - SEMAPHORE_ADMIN_EMAIL=rpakishore@gmail.com
+      - SEMAPHORE_ADMIN=rpakishore
+      - SEMAPHORE_ACCESS_KEY_ENCRYPTION=${SEMAPHORE_ACCESS_KEY_ENCRYPTION}  # add to your access key encryption !
+      - ANSIBLE_HOST_KEY_CHECKING=false  # (optional) change to true if you want to enable host key checking
+    volumes:
+      - ./inventory:/inventory:ro
+      - ./authorized_keys:/authorized-keys:ro
+      - semaphore-config:/etc/semaphore:rw
+      - ./playbooks:/playbooks
+    restart: unless-stopped
+    depends_on:
+      - mysql
+    networks:
+      - nginx
+      - ansible
+    env_file:
+      - .env

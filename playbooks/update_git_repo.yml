@@ -1,0 +1,25 @@
+---
+- name: Execute update_git_repo.sh script if file exists
+  hosts: all
+  become: no
+  gather_facts: no
+
+  tasks:
+    - name: Check if update_git_repo.sh file exists
+      stat:
+        path: ~/update_git_repo.sh
+      register: script_file
+
+    - name: Run update_git_repo.sh script
+      command: sh ~/update_git_repo.sh
+      when: script_file.stat.exists
+
+    - name: Update Script Exists
+      debug:
+        msg: "The file or directory exists"
+      when: script_file.stat.exists
+
+    - name: Update Script Absent
+      debug:
+        msg: "The file or directory does NOT exist"
+      when: not script_file.stat.exists

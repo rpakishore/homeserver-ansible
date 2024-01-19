@@ -1,0 +1,19 @@
+- hosts: all
+  become: true
+  name: Clear page cache using sysctl
+  tasks:
+    - name: Run 'sudo sync' command
+      command: sync
+      become: true
+
+    - name: Run 'sudo sysctl -w vm.drop_caches=3' command
+      command: sysctl -w vm.drop_caches=3
+      become: true
+      
+    - name: Disable Swap
+      command: swapoff -a
+      become: true
+      
+    - name: Re-Enable Swap
+      command: swapon -a
+      become: true
